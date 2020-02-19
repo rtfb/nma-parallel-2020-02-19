@@ -1,0 +1,199 @@
+Lygiagretus programavimas
+(ir truputis distributed systems)
+19 Feb 2020
+Tags: go, concurrency, parallelism, distributed
+
+Vytautas Šaltenis
+Uber Engineering
+vytas@rtfb.lt
+https://rtfb.lt/
+https://github.com/rtfb/
+# @rtfb
+
+* Intro: apie mane
+
+Programuoju jau >20 metų
+Iš jų ~17 profesionaliai
+Pastaruosius keletą metų distributed sistemas su Go
+
+.link https://rtfb.lt
+
+* Intro: šiandienos planas
+
+Trys dalys:
+
+1. Lygiagrečios sistemos viename kompiuteryje
+
+2. "Praktika". Panagrinėsim kelias mano paruoštas programas. Čia pabandysiu
+  įtikinti, kad ne taip jau ten viskas ir sunku :-)
+
+3. Šiek tiek apie distributed systems: lygiagrečios sistemos daugelyje kompiuterių
+  Šitoj daly aš jus pabandysiu įtikinti, kad distributed sistemos
+  yra labai sunku.
+
+.link https://github.com/rtfb/nma-parallel-2020-02-19
+
+* Apie ką šiandien NEkalbėsime
+
+.image rails.jpg
+
+* Apie ką dar NEkalbėsime
+
+.image gpu.jpg
+
+* Ir dar apie ką NEkalbėsime
+
+.image cerebras.jpg 500 _
+
+.link https://www.cerebras.net/product/
+
+* Cerebras CS-1
+
+.image cerebras-and-rej.jpg 500 _
+
+
+* O kalbėsime štai apie ką
+
+.play -numbers fetcher.go /START OMIT/,/END OMIT/
+
+
+* Lygiagretus programavimas viename kompiuteryje
+
+- Procesai
+- Gijos (threads)
+- Korutinos (coroutines/goroutines)
+
+* Modernaus procesoriaus schema
+
+.image cpu-areas.png
+
+* Lygiagretumas procesoriaus lygyje
+
+- Procesoriai šiais laikais multi-core
+- Pipelininimas
+- Instrukcijų apkeitimas (reordering)
+
+CPU pseudokodas:
+
+.code out-of-order.c
+
+* Sinchronizavimas I
+
+- Memory fence (a.k.a. memory barrier)
+
+CPU pseudokodas:
+
+.code out-of-order2.c
+
+* Sinchronizavimas I-a
+
+Konkretus pavyzdys: ARM procesoriuose gali būti tokios instrukcijos:
+- Data Memory Barrier (DMB)
+- Data Synchronization Barrier (DSB)
+
+CPU pseudokodas:
+
+.code out-of-order2a.c
+
+* Sinchronizavimas II
+
+- Kompiliatoriaus generuojamas instrukcijų eiliškumas
+
+Go programa:
+
+.code out-of-order.go
+
+CPU pseudokodas:
+
+.code out-of-order3.c
+
+* Sinchronizavimas III
+
+- Atominės operacijos
+- Mutexai
+- Semaforai
+
+* Patobulinkime mūsų adresų skaitytuvą
+
+.play -numbers fetcher2.go /START OMIT/,/END OMIT/
+
+* Patobulinkime mūsų adresų skaitytuvą (toliau)
+
+.play -numbers fetcher3.go /START OMIT/,/END OMIT/
+
+* Pavyzdys iš tikro produkcinio kodo
+
+.code prod-code01.go HLa
+
+* Pavyzdys iš tikro produkcinio kodo (toliau)
+
+.code prod-code01.go HLb
+
+* Pavyzdys iš tikro produkcinio kodo (dar toliau)
+
+.code prod-code01.go HLc
+
+* Dar vienas pavyzdys iš tikro produkcinio kodo
+
+.code prod-code02.go
+
+
+
+* Switch gears
+
+Distributed systems.
+
+* Kas tos distributed sistemos ir kam jų reikia?
+
+- Bendriausia prasme, tai plati sąvoka ir sudėtinga ir plati tema
+- Dažniausiai turima omeny vieno uždavinio paskirstymas tarp daug kompų
+- Kam? Nes uždaviniai išaugo ir peraugo pavienių kompiuterių pajėgumus
+- Siauresne prasme, distributed sistemos gali būti ir ant vieno čipo
+
+* CAP theorem
+
+- Consistency: Every read receives the most recent write or an error
+- Availability: Every request receives a (non-error) response, without the guarantee that it contains the most recent write
+- Partition tolerance: The system continues to operate despite an arbitrary number of messages being dropped (or delayed) by the network between nodes
+
+.link https://en.wikipedia.org/wiki/CAP_theorem
+
+* Šiek tiek (nesenos) istorijos
+
+Bizantijos karvedžių problema.
+
+.link https://en.wikipedia.org/wiki/Byzantine_fault
+
+Nors ir skamba kaip kažkas iš antikos, realiai uždavinys ir sprendimai
+suformuluoti 1978-1982 metais.
+
+Reaching Agreement in the Presence of Faults (1978)
+.link https://lamport.azurewebsites.net/pubs/reaching.pdf
+
+The Byzantine Generals Problem (1982)
+.link https://people.eecs.berkeley.edu/~luca/cs174/byzantine.pdf
+
+# * Leader election
+# 
+# Vienas iš būdų išspręsti problemą yra jos išvengti. Vietoj to, kad
+# koordinuotume pastangas, išsirinkime vieną lyderį.
+
+
+
+
+* Recap
+
+- Norint išvengti klaidų, reikia suprasti kiekvieną sluoksnį
+
+* Naudingos nuorodos
+
+.link https://www.youtube.com/watch?v=cN_DpYBzKso Rob Pike - 'Concurrency Is Not Parallelism'
+
+.link https://www.youtube.com/watch?v=HxaD_trXwRE&t=3s Lexical Scanning in Go - Rob Pike
+
+.link https://blog.golang.org/pipelines Go Concurrency Patterns: Pipelines and cancellation
+
+.link https://blog.golang.org/context Go Concurrency Patterns: Context
+
+.link https://lamport.azurewebsites.net/pubs/paxos-simple.pdf Paxos Made Simple
+
